@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control de Archivos — Servicios Educativos Q. Roo</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════
+   VARIABLES & RESET
+═══════════════════════════════════════ */
+:root {
+  --g1: #3a0415;   /* guinda oscuro */
+  --g2: #6b1030;   /* guinda medio */
+  --g3: #8c1a3f;   /* guinda claro */
+  --g4: #aa2050;   /* guinda vivo */
+  --d1: #7a5c18;   /* dorado oscuro */
+  --d2: #b8892a;   /* dorado medio */
+  --d3: #d4a843;   /* dorado */
+  --d4: #e8c96a;   /* dorado claro */
+  --d5: #f5e9b8;   /* dorado pálido */
+  --d6: #fdf8ec;   /* crema */
+  --blanco: #ffffff;
+  --crema: #faf6ee;
+  --borde: rgba(180,130,40,0.25);
+  --sombra: 0 6px 32px rgba(58,4,21,0.18);
+  --sombra-d: 0 4px 20px rgba(180,130,40,0.22);
+}
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body {
+  font-family:'EB Garamond', Georgia, serif;
+  background: var(--crema);
+  color: var(--g1);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ═══════════════════════════════════════
+   PARTÍCULA DE FONDO
+═══════════════════════════════════════ */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(107,16,48,0.04) 0%, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(212,168,67,0.06) 0%, transparent 50%);
+}
+
+/* ═══════════════════════════════════════
+   HEADER
+═══════════════════════════════════════ */
+header {
+  position:relative; overflow:hidden;
+  background: linear-gradient(160deg,
+    var(--g1) 0%,
+    var(--g2) 30%,
+    var(--g3) 55%,
+    var(--g2) 75%,
+    var(--g1) 100%);
+  padding: 0;
+}
+/* brillo diagonal */
+header::before {
+  content:'';
+  position:absolute; top:-60%; left:-20%; width:60%; height:220%;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.06) 50%, transparent 60%);
+  pointer-events:none;
+}
+/* línea dorada superior */
+header::after {
+  content:'';
+  position:absolute; bottom:0; left:0; right:0; height:3px;
+  background: linear-gradient(90deg, transparent 0%, var(--d2) 20%, var(--d4) 50%, var(--d2) 80%, transparent 100%);
+}
+
+.hdr-top {
+  display:flex; align-items:center; gap:22px;
+  padding:20px 36px 22px;
+  position:relative; z-index:1;
+}
+
+/* ─── LOGO ZONE ─── */
+.logo-container {
+  flex-shrink:0;
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+}
+.logo-ring {
+  position:relative;
+  width:88px; height:88px;
+  border-radius:50%;
+  border:2px solid var(--d3);
+  box-shadow: 0 0 0 4px rgba(212,168,67,0.2), 0 0 0 7px rgba(212,168,67,0.08), var(--sombra-d);
+  overflow:hidden;
+  cursor:pointer;
+  transition: box-shadow .3s, transform .3s;
+  background: rgba(255,255,255,0.1);
+}
+.logo-ring:hover {
+  box-shadow: 0 0 0 5px rgba(212,168,67,0.4), 0 0 0 9px rgba(212,168,67,0.12), var(--sombra-d);
+  transform:scale(1.04);
+}
+#logo-img { width:100%; height:100%; object-fit:cover; display:none; }
+.logo-ph {
+  width:100%; height:100%; display:flex; align-items:center; justify-content:center;
+  font-size:2.6rem; color:rgba(255,255,255,0.45);
+}
+.logo-overlay {
+  position:absolute; inset:0; border-radius:50%;
+  background:rgba(58,4,21,0.7);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+  opacity:0; transition:opacity .25s;
+  font-family:'Cinzel',serif; font-size:.6rem; color:var(--d4);
+  font-weight:700; letter-spacing:.06em; text-align:center;
+}
+.logo-ring:hover .logo-overlay { opacity:1; }
+
+/* slider zoom logo */
+.logo-zoom-row {
+  display:flex; align-items:center; gap:6px;
+}
+.logo-zoom-row label { font-size:.6rem; color:rgba(255,255,255,.5); letter-spacing:.06em; }
+#logo-zoom {
+  width:70px; height:3px; cursor:pointer;
+  accent-color: var(--d3);
+}
+#logo-file { display:none; }
+
+/* ─── HEADER TEXT ─── */
+.hdr-text { flex:1; }
+.hdr-text .eyebrow {
+  font-family:'Cinzel',serif; font-size:.65rem; font-weight:400;
+  letter-spacing:.2em; text-transform:uppercase;
+  color:var(--d4); opacity:.8; margin-bottom:.3rem;
+}
+.hdr-text h1 {
+  font-family:'Cinzel Decorative', serif;
+  font-size:1.35rem; font-weight:700;
+  color:var(--blanco);
+  line-height:1.2;
+  text-shadow: 0 2px 10px rgba(0,0,0,.5), 0 0 30px rgba(212,168,67,.2);
+  letter-spacing:.04em;
+}
+.hdr-text .sub {
+  font-family:'Cinzel',serif; font-size:.72rem;
+  color:var(--d4); letter-spacing:.12em; text-transform:uppercase;
+  margin-top:.4rem; opacity:.75;
+}
+
+/* ─── HEADER RIGHT ─── */
+.hdr-right {
+  text-align:right;
+  font-family:'Cinzel',serif; font-size:.68rem;
+  color:rgba(255,255,255,.55);
+  line-height:1.8;
+}
+.hdr-right strong { color:var(--d4); font-size:.78rem; }
+
+/* ornamento dorado */
+.hdr-ornament {
+  text-align:center;
+  padding:6px 0 8px;
+  font-size:.9rem; color:var(--d3);
+  letter-spacing:.5em;
+  opacity:.7;
+}
+
+/* ═══════════════════════════════════════
+   BARRA DECO
+═══════════════════════════════════════ */
+.deco-bar {
+  height:5px;
+  background: linear-gradient(90deg,
+    var(--g1) 0%, var(--d1) 10%, var(--d3) 25%,
+    var(--d4) 40%, var(--blanco) 50%,
+    var(--d4) 60%, var(--d3) 75%, var(--d1) 90%, var(--g1) 100%);
+}
+
+/* ═══════════════════════════════════════
+   MAIN
+═══════════════════════════════════════ */
+main {
+  position:relative; z-index:1;
+  max-width:1340px; margin:0 auto;
+  padding:30px 22px 80px;
+}
+
+/* ═══════════════════════════════════════
+   ESTADÍSTICAS
+═══════════════════════════════════════ */
+.stats-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(155px,1fr));
+  gap:14px; margin-bottom:28px;
+}
+.stat-card {
+  background:var(--blanco);
+  border-radius:12px;
+  border:1px solid var(--borde);
+  padding:16px 18px;
+  position:relative; overflow:hidden;
+  box-shadow:0 2px 14px rgba(58,4,21,.08);
+  animation:slideIn .5s ease both;
+  transition:transform .2s, box-shadow .2s;
+}
+.stat-card:hover { transform:translateY(-2px); box-shadow:var(--sombra); }
+.stat-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg,var(--g2),var(--d3));
+}
+.stat-card::after {
+  content:attr(data-icon);
+  position:absolute; right:12px; top:50%; transform:translateY(-50%);
+  font-size:2.2rem; opacity:.1; pointer-events:none;
+}
+.stat-label {
+  font-family:'Cinzel',serif; font-size:.6rem; font-weight:700;
+  letter-spacing:.12em; text-transform:uppercase;
+  color:var(--g3); margin-bottom:4px;
+}
+.stat-val {
+  font-family:'Cinzel Decorative',serif; font-size:2rem;
+  color:var(--g1); line-height:1;
+}
+@keyframes slideIn { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+/* ═══════════════════════════════════════
+   TARJETAS
+═══════════════════════════════════════ */
+.card {
+  background:var(--blanco);
+  border-radius:16px;
+  border:1px solid var(--borde);
+  box-shadow:var(--sombra);
+  overflow:hidden;
+  margin-bottom:30px;
+  animation:slideIn .5s ease both;
+}
+.card-head {
+  position:relative; overflow:hidden;
+  padding:15px 28px;
+  background: linear-gradient(135deg, var(--g1) 0%, var(--g2) 50%, var(--g3) 100%);
+  display:flex; align-items:center; gap:14px;
+}
+.card-head::before {
+  content:'';
+  position:absolute; inset:0;
+  background: radial-gradient(ellipse at 80% 50%, rgba(212,168,67,.12) 0%, transparent 60%);
+}
+.card-head::after {
+  content:''; position:absolute; bottom:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,transparent,var(--d3) 30%,var(--d4) 50%,var(--d3) 70%,transparent);
+}
+.card-head .ch-icon { font-size:1.4rem; position:relative; z-index:1; }
+.card-head h2 {
+  font-family:'Cinzel',serif; font-size:1rem; font-weight:700;
+  letter-spacing:.1em; color:var(--blanco);
+  text-shadow:0 1px 6px rgba(0,0,0,.4);
+  position:relative; z-index:1;
+}
+.card-head .ch-pill {
+  margin-left:auto; position:relative; z-index:1;
+  background:rgba(212,168,67,.2); border:1px solid var(--d3);
+  color:var(--d4); border-radius:20px; padding:3px 14px;
+  font-family:'Cinzel',serif; font-size:.62rem; font-weight:700; letter-spacing:.08em;
+}
+.card-body { padding:26px 28px; }
+
+/* ═══════════════════════════════════════
+   FORMULARIO
+═══════════════════════════════════════ */
+.form-grid {
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  gap:16px 18px;
+}
+.gc1  { grid-column:span 1; }
+.gc2  { grid-column:span 2; }
+.gc3  { grid-column:span 3; }
+.gc4  { grid-column:span 4; }
+.gc5  { grid-column:span 5; }
+.gc6  { grid-column:span 6; }
+.gc7  { grid-column:span 7; }
+.gc8  { grid-column:span 8; }
+.gc9  { grid-column:span 9; }
+.gc12 { grid-column:span 12; }
+
+.field { display:flex; flex-direction:column; gap:5px; }
+.field label {
+  font-family:'Cinzel',serif;
+  font-size:.62rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--g2);
+}
+.field label .req { color:var(--d2); margin-left:2px; }
+
+.field input, .field select, .field textarea {
+  font-family:'EB Garamond',serif;
+  font-size:.95rem;
+  border:1.5px solid rgba(180,130,40,.3);
+  border-radius:8px;
+  padding:8px 12px;
+  background:var(--d6);
+  color:var(--g1);
+  outline:none;
+  transition:border .2s, box-shadow .2s, background .2s;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color:var(--g2);
+  box-shadow:0 0 0 3px rgba(107,16,48,.1);
+  background:var(--blanco);
+}
+.field textarea { resize:vertical; min-height:68px; }
+.field select { cursor:pointer; }
+
+/* campos especiales */
+.f-consec input {
+  font-family:'Cinzel',serif; font-size:1.1rem; font-weight:700;
+  text-align:center; background:var(--d5); border-color:var(--d2);
+  color:var(--g1); letter-spacing:.1em;
+}
+.f-total input {
+  font-family:'Cinzel',serif; font-size:1.1rem; font-weight:700;
+  text-align:center; background:var(--d5); border-color:var(--d2);
+  color:var(--g1); pointer-events:none;
+}
+
+/* ─── LOCALIZACIÓN ─── */
+.loc-row {
+  display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:end;
+}
+.loc-sep {
+  font-family:'Cinzel',serif; font-size:.75rem; color:var(--d2);
+  text-align:center; padding-bottom:10px; letter-spacing:.06em;
+}
+.loc-inner { display:flex; flex-direction:column; gap:5px; }
+.loc-inner label {
+  font-family:'Cinzel',serif; font-size:.58rem; font-weight:700;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--g2);
+}
+.loc-inner select {
+  font-family:'EB Garamond',serif; font-size:.9rem;
+  border:1.5px solid rgba(180,130,40,.3); border-radius:8px;
+  padding:7px 10px; background:var(--d6); color:var(--g1);
+  outline:none; transition:border .2s,box-shadow .2s,background .2s;
+}
+.loc-inner select:focus { border-color:var(--g2); box-shadow:0 0 0 3px rgba(107,16,48,.1); background:var(--blanco); }
+
+/* ─── No. CAJA ─── */
+.caja-row {
+  display:flex; align-items:center; gap:8px;
+}
+.caja-row span {
+  font-family:'Cinzel',serif; font-size:.72rem; color:var(--g3);
+  white-space:nowrap; padding-bottom:2px;
+}
+.caja-row input {
+  font-family:'EB Garamond',serif; font-size:.95rem;
+  border:1.5px solid rgba(180,130,40,.3); border-radius:8px;
+  padding:8px 10px; background:var(--d6); color:var(--g1); outline:none;
+  width:60px; text-align:center;
+  transition:border .2s,box-shadow .2s,background .2s;
+}
+.caja-row input:focus { border-color:var(--g2); box-shadow:0 0 0 3px rgba(107,16,48,.1); background:var(--blanco); }
+
+/* ─── AÑOS ─── */
+.anos-row {
+  display:flex; align-items:center; gap:8px;
+}
+.anos-row span {
+  font-family:'Cinzel',serif; font-size:.7rem; color:var(--g3);
+  white-space:nowrap;
+}
+.anos-row input {
+  font-family:'EB Garamond',serif; font-size:.95rem;
+  border:1.5px solid rgba(180,130,40,.3); border-radius:8px;
+  padding:8px 10px; background:var(--d6); color:var(--g1); outline:none;
+  width:70px; text-align:center;
+  transition:border .2s,box-shadow .2s,background .2s;
+}
+.anos-row input:focus { border-color:var(--g2); box-shadow:0 0 0 3px rgba(107,16,48,.1); background:var(--blanco); }
+
+/* ─── OBSERVACIONES + FOTO ─── */
+.obs-zone { display:flex; flex-direction:column; gap:8px; }
+.obs-area-wrap { position:relative; }
+.obs-cam-btn {
+  position:absolute; bottom:8px; right:8px;
+  background:linear-gradient(135deg,var(--g2),var(--g1));
+  color:var(--d4); border:1px solid var(--d3);
+  border-radius:7px; padding:5px 12px;
+  font-family:'Cinzel',serif; font-size:.62rem; font-weight:700;
+  letter-spacing:.06em; cursor:pointer;
+  transition:background .2s, transform .15s;
+}
+.obs-cam-btn:hover { background:linear-gradient(135deg,var(--g3),var(--g2)); transform:scale(1.04); }
+#obs-foto-input { display:none; }
+.obs-foto-preview {
+  display:none; flex-direction:column; gap:8px;
+  background:var(--d6); border:1.5px dashed var(--d3);
+  border-radius:10px; padding:12px; align-items:flex-start;
+}
+.obs-foto-preview img {
+  max-height:120px; border-radius:8px;
+  border:2px solid var(--d3); box-shadow:var(--sombra-d);
+}
+.obs-foto-actions { display:flex; gap:10px; align-items:center; }
+.obs-foto-actions button {
+  font-family:'Cinzel',serif; font-size:.62rem; font-weight:700; letter-spacing:.06em;
+  padding:4px 12px; border-radius:6px; cursor:pointer; border:none;
+  transition:all .2s;
+}
+.btn-rm-foto { background:rgba(107,16,48,.1); color:var(--g2); border:1px solid var(--g3) !important; }
+.btn-rm-foto:hover { background:var(--g2); color:var(--d4); }
+
+/* ═══════════════════════════════════════
+   BOTONES
+═══════════════════════════════════════ */
+.btns {
+  display:flex; flex-wrap:wrap; gap:12px;
+  margin-top:22px; padding-top:20px;
+  border-top:1px solid var(--borde);
+}
+.btn {
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:'Cinzel',serif; font-weight:700; font-size:.78rem;
+  letter-spacing:.08em; cursor:pointer;
+  padding:10px 22px; border-radius:9px; border:none;
+  transition:all .22s;
+}
+.btn-primary {
+  background:linear-gradient(135deg,var(--g2) 0%,var(--g1) 100%);
+  color:var(--d4); box-shadow:0 4px 16px rgba(58,4,21,.35);
+}
+.btn-primary:hover { transform:translateY(-2px); box-shadow:0 7px 22px rgba(58,4,21,.4); }
+.btn-gold {
+  background:linear-gradient(135deg,var(--d3) 0%,var(--d1) 100%);
+  color:var(--g1); box-shadow:var(--sombra-d);
+}
+.btn-gold:hover { transform:translateY(-2px); box-shadow:0 7px 22px rgba(180,130,40,.4); }
+.btn-outline {
+  background:transparent; color:var(--g2);
+  border:2px solid var(--g2) !important;
+}
+.btn-outline:hover { background:var(--g2); color:var(--d4); }
+.btn-ghost {
+  background:transparent; color:var(--g3);
+  border:1.5px solid rgba(180,130,40,.3) !important;
+}
+.btn-ghost:hover { border-color:var(--g2) !important; color:var(--g2); }
+.btn-red {
+  background:linear-gradient(135deg,#c62828,#7f0000);
+  color:#fff; box-shadow:0 4px 14px rgba(120,0,0,.35);
+}
+.btn-red:hover { transform:translateY(-1px); }
+
+/* ═══════════════════════════════════════
+   TABLA
+═══════════════════════════════════════ */
+.tbl-head-extra {
+  display:flex; align-items:center; gap:14px;
+  padding:14px 26px 0; flex-wrap:wrap;
+}
+.search-wrap {
+  display:flex; align-items:center; gap:8px; flex:1; min-width:220px;
+}
+.search-wrap label {
+  font-family:'Cinzel',serif; font-size:.62rem; font-weight:700;
+  letter-spacing:.1em; color:var(--g3); white-space:nowrap;
+}
+.search-wrap input {
+  flex:1; padding:8px 14px;
+  border:1.5px solid rgba(180,130,40,.3); border-radius:8px;
+  font-family:'EB Garamond',serif; font-size:.9rem;
+  background:var(--d6); color:var(--g1); outline:none;
+  transition:border .2s;
+}
+.search-wrap input:focus { border-color:var(--g2); }
+
+.table-wrap { overflow-x:auto; padding:14px 0 0; }
+table { width:100%; border-collapse:collapse; font-size:.8rem; }
+thead tr th {
+  font-family:'Cinzel',serif; font-size:.6rem; font-weight:700;
+  letter-spacing:.09em; text-transform:uppercase;
+  padding:11px 13px; text-align:left; white-space:nowrap;
+  background:linear-gradient(180deg,var(--g2) 0%,var(--g1) 100%);
+  color:var(--d4);
+  border-bottom:2px solid var(--d2);
+}
+tbody tr { border-bottom:1px solid rgba(180,130,40,.15); transition:background .15s; }
+tbody tr:hover { background:var(--d5); }
+tbody tr:nth-child(even) { background:var(--d6); }
+tbody tr:nth-child(even):hover { background:var(--d5); }
+td { padding:9px 13px; vertical-align:middle; color:var(--g1); font-family:'EB Garamond',serif; font-size:.85rem; }
+
+/* badges */
+.bdg { display:inline-block; border-radius:20px; padding:2px 10px; font-family:'Cinzel',serif; font-size:.68rem; font-weight:700; }
+.bdg-consec { background:linear-gradient(135deg,var(--g2),var(--g1)); color:var(--d4); }
+.bdg-total  { background:linear-gradient(135deg,var(--d3),var(--d1)); color:var(--g1); }
+.bdg-serv   { background:rgba(107,16,48,.1); color:var(--g2); border:1px solid rgba(107,16,48,.2); }
+.bdg-loc    { background:rgba(180,130,40,.12); color:var(--d1); border:1px solid rgba(180,130,40,.25); font-size:.65rem; }
+
+.td-img {
+  width:52px; height:42px; object-fit:cover;
+  border-radius:6px; border:2px solid var(--d3);
+  cursor:zoom-in; box-shadow:var(--sombra-d);
+  margin-top:3px; transition:transform .2s, box-shadow .2s;
+}
+.td-img:hover { transform:scale(1.12); box-shadow:0 6px 20px rgba(180,130,40,.4); }
+
+.td-desc { max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.td-obs  { max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:.78rem; color:var(--g3); }
+
+.no-data { text-align:center; padding:52px; color:#b8a090; }
+.no-data span { font-size:3rem; display:block; margin-bottom:12px; }
+
+.td-actions { display:flex; gap:6px; }
+.btn-sm { padding:5px 11px; font-size:.65rem; border-radius:6px; letter-spacing:.06em; }
+
+/* ═══════════════════════════════════════
+   MODAL ELIMINAR
+═══════════════════════════════════════ */
+.modal-bg {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,.65); z-index:600;
+  align-items:center; justify-content:center;
+}
+.modal-bg.open { display:flex; }
+.modal {
+  background:var(--blanco); border-radius:16px;
+  padding:32px 28px; max-width:420px; width:92%;
+  box-shadow:0 20px 70px rgba(0,0,0,.4);
+  text-align:center; position:relative; overflow:hidden;
+}
+.modal::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:4px;
+  background:linear-gradient(90deg,var(--g2),var(--d3),var(--g2));
+}
+.modal h3 {
+  font-family:'Cinzel',serif; font-size:1.15rem;
+  color:var(--g2); margin-bottom:12px;
+}
+.modal p { font-size:.9rem; color:var(--g3); margin-bottom:22px; }
+.modal-btns { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+
+/* LIGHTBOX */
+#lightbox {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,.88); z-index:700;
+  align-items:center; justify-content:center; cursor:zoom-out;
+  animation:fadeIn .2s ease;
+}
+#lightbox.open { display:flex; }
+#lightbox img {
+  max-width:90vw; max-height:88vh;
+  border-radius:12px; border:3px solid var(--d3);
+  box-shadow:0 0 80px rgba(212,168,67,.35);
+}
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+/* TOAST */
+#toast {
+  position:fixed; bottom:26px; right:26px;
+  background:linear-gradient(135deg,var(--g2),var(--g1));
+  color:var(--d4); border:1px solid var(--d2);
+  padding:12px 22px; border-radius:10px;
+  font-family:'Cinzel',serif; font-weight:700; font-size:.78rem; letter-spacing:.06em;
+  box-shadow:0 8px 30px rgba(58,4,21,.4);
+  transform:translateY(80px); opacity:0;
+  transition:all .38s cubic-bezier(.34,1.56,.64,1);
+  z-index:999; display:flex; align-items:center; gap:10px;
+}
+#toast.show { transform:translateY(0); opacity:1; }
+
+/* FOOTER */
+footer {
+  background:linear-gradient(90deg,var(--g1),var(--g2),var(--g1));
+  color:var(--d4); text-align:center;
+  padding:14px; font-family:'Cinzel',serif;
+  font-size:.62rem; letter-spacing:.15em;
+  border-top:2px solid var(--d2);
+}
+
+/* PRINT */
+@media print {
+  header { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .btns,.td-actions,.tbl-head-extra,.obs-cam-btn,.logo-overlay,.logo-zoom-row,
+  .stats-grid,footer,#toast { display:none !important; }
+  .card { box-shadow:none; border:1px solid #ccc; }
+  body { background:white; }
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .hdr-top { padding:14px 16px; gap:14px; }
+  .hdr-text h1 { font-size:1rem; }
+  .gc3,.gc4,.gc5,.gc6,.gc7,.gc8,.gc9 { grid-column:span 12; }
+  .gc2 { grid-column:span 6; }
+  .btn { width:100%; justify-content:center; }
+  .btns { flex-direction:column; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="hdr-top">
+
+    <!-- LOGO -->
+    <div class="logo-container">
+      <div class="logo-ring" onclick="document.getElementById('logo-file').click()" title="Clic para cargar logo">
+        <img id="logo-img" src="" alt="Logo">
+        <div class="logo-ph" id="logo-ph">🏛️</div>
+        <div class="logo-overlay">📷<br>CARGAR<br>LOGO</div>
+      </div>
+      <div class="logo-zoom-row">
+        <label>−</label>
+        <input type="range" id="logo-zoom" min="60" max="140" value="100" oninput="zoomLogo(this.value)">
+        <label>+</label>
+      </div>
+      <input type="file" id="logo-file" accept="image/jpeg,image/jpg,image/png,image/gif">
+    </div>
+
+    <!-- TEXTO -->
+    <div class="hdr-text">
+      <div class="eyebrow">Gobierno del Estado de Quintana Roo</div>
+      <h1>Servicios Educativos<br>de Quintana Roo</h1>
+      <div class="sub">Sistema de Control y Captura de Archivos Documentales</div>
+    </div>
+
+    <!-- DERECHA -->
+    <div class="hdr-right">
+      <strong id="hdr-fecha">—</strong><br>
+      Unidad de Archivo<br>Control Documental
+    </div>
+  </div>
+  <div class="hdr-ornament">✦ &nbsp; ✦ &nbsp; ✦</div>
+</header>
+<div class="deco-bar"></div>
+
+<!-- ═══ MAIN ═══ -->
+<main>
+
+  <!-- ESTADÍSTICAS -->
+  <div class="stats-grid">
+    <div class="stat-card" data-icon="📁" style="animation-delay:.05s">
+      <div class="stat-label">Expedientes</div>
+      <div class="stat-val" id="st-exp">0</div>
+    </div>
+    <div class="stat-card" data-icon="📦" style="animation-delay:.1s">
+      <div class="stat-label">Total Cajas</div>
+      <div class="stat-val" id="st-cajas">0</div>
+    </div>
+    <div class="stat-card" data-icon="🏢" style="animation-delay:.15s">
+      <div class="stat-label">Áreas</div>
+      <div class="stat-val" id="st-areas">0</div>
+    </div>
+    <div class="stat-card" data-icon="📋" style="animation-delay:.2s">
+      <div class="stat-label">U. Administrativas</div>
+      <div class="stat-val" id="st-units">0</div>
+    </div>
+    <div class="stat-card" data-icon="🖼️" style="animation-delay:.25s">
+      <div class="stat-label">Con Fotografía</div>
+      <div class="stat-val" id="st-fotos">0</div>
+    </div>
+  </div>
+
+  <!-- ═══ FORMULARIO ═══ -->
+  <div class="card" style="animation-delay:.1s">
+    <div class="card-head">
+      <span class="ch-icon">📝</span>
+      <h2 id="form-title">CAPTURA DE EXPEDIENTE</h2>
+      <div class="ch-pill" id="form-pill">NUEVO REGISTRO</div>
+    </div>
+    <div class="card-body">
+      <div class="form-grid">
+
+        <!-- No. Consecutivo -->
+        <div class="field f-consec gc2">
+          <label>No. Consecutivo <span class="req">*</span></label>
+          <input id="f-consec" type="text" placeholder="001" maxlength="6">
+        </div>
+
+        <!-- Área -->
+        <div class="field gc4">
+          <label>Área <span class="req">*</span></label>
+          <input id="f-area" type="text" placeholder="Ej. Recursos Humanos">
+        </div>
+
+        <!-- Servicios -->
+        <div class="field gc6">
+          <label>Servicios <span class="req">*</span></label>
+          <select id="f-servicios">
+            <option value="">— Seleccionar —</option>
+            <option value="Servicios Educativos">Servicios Educativos</option>
+            <option value="Secretaría de Educación">Secretaría de Educación</option>
+          </select>
+        </div>
+
+        <!-- Unidad Administrativa -->
+        <div class="field gc12">
+          <label>Unidad Administrativa o Productora <span class="req">*</span></label>
+          <input id="f-unidad" type="text" placeholder="Ej. Dirección de Educación Básica">
+        </div>
+
+        <!-- Clave Expediente -->
+        <div class="field gc4">
+          <label>Clave del Expediente <span class="req">*</span></label>
+          <input id="f-clave" type="text" placeholder="Ej. RH-2024-001">
+        </div>
+
+        <!-- Nombre/Descripción -->
+        <div class="field gc8">
+          <label>Nombre o Descripción del Expediente <span class="req">*</span></label>
+          <input id="f-nombre" type="text" placeholder="Descripción completa del expediente o serie documental">
+        </div>
+
+        <!-- Localización -->
+        <div class="field gc6">
+          <label>Localización</label>
+          <div class="loc-row">
+            <div class="loc-inner">
+              <label>Estante No.</label>
+              <select id="f-estante">
+                <option value="">— Estante —</option>
+                <option value="Sin asignar">Sin asignar</option>
+              </select>
+            </div>
+            <div class="loc-sep">—</div>
+            <div class="loc-inner">
+              <label>Pasillo No.</label>
+              <select id="f-pasillo">
+                <option value="">— Pasillo —</option>
+                <option value="Sin asignar">Sin asignar</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- No. de Caja -->
+        <div class="field gc3">
+          <label>No. de Caja <span class="req">*</span></label>
+          <div class="caja-row">
+            <input id="f-caja-num" type="number" min="1" max="1000" placeholder="1" oninput="calcTotal()">
+            <span>de</span>
+            <input id="f-caja-de" type="number" min="1" max="1000" placeholder="1" oninput="calcTotal()">
+          </div>
+        </div>
+
+        <!-- Años -->
+        <div class="field gc3">
+          <label>Años <span class="req">*</span></label>
+          <div class="anos-row">
+            <input id="f-ano-de" type="number" min="1900" max="2099" placeholder="2018" style="width:78px">
+            <span>a</span>
+            <input id="f-ano-a" type="number" min="1900" max="2099" placeholder="2024" style="width:78px">
+          </div>
+        </div>
+
+        <!-- Total de Cajas -->
+        <div class="field f-total gc3">
+          <label>Total de Cajas</label>
+          <input id="f-total" type="number" min="1" max="1000" placeholder="1" readonly>
+        </div>
+
+        <!-- Observaciones + Foto -->
+        <div class="field gc12">
+          <label>Observaciones</label>
+          <div class="obs-zone">
+            <div class="obs-area-wrap">
+              <textarea id="f-obs" placeholder="Estado físico del archivo, condiciones especiales, restricciones de acceso, ubicación exacta u otras notas relevantes…"></textarea>
+              <button class="obs-cam-btn" type="button" onclick="document.getElementById('obs-foto-input').click()">📷 AGREGAR FOTO</button>
+              <input type="file" id="obs-foto-input" accept="image/*">
+            </div>
+            <div class="obs-foto-preview" id="obs-preview">
+              <img id="obs-img" src="" alt="Vista previa">
+              <div class="obs-foto-actions">
+                <button class="btn-rm-foto" onclick="quitarFotoObs()">✕ Quitar foto</button>
+                <span style="font-family:'Cinzel',serif;font-size:.62rem;color:var(--d2)">JPG/PNG adjunto</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /form-grid -->
+
+      <div class="btns">
+        <button class="btn btn-primary" onclick="guardar()">💾 Guardar Registro</button>
+        <button class="btn btn-outline" id="btn-cancelar" onclick="cancelarEdicion()" style="display:none">✕ Cancelar</button>
+        <button class="btn btn-ghost" onclick="limpiarForm(false)">🔄 Limpiar</button>
+        <button class="btn btn-gold" onclick="exportarCSV()">📥 Exportar CSV</button>
+        <button class="btn btn-ghost" onclick="window.print()">🖨️ Imprimir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TABLA ═══ -->
+  <div class="card table-card" style="animation-delay:.2s">
+    <div class="card-head">
+      <span class="ch-icon">📋</span>
+      <h2>EXPEDIENTES REGISTRADOS</h2>
+      <div class="ch-pill" id="tbl-count">0 registros</div>
+    </div>
+    <div class="tbl-head-extra">
+      <div class="search-wrap">
+        <label>🔍 BUSCAR:</label>
+        <input type="text" id="buscador" placeholder="Área, clave, nombre, unidad, localización…" oninput="filtrar()">
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>Área</th>
+            <th>Servicios</th>
+            <th>Unidad Adm.</th>
+            <th>Clave Exp.</th>
+            <th>Nombre / Descripción</th>
+            <th>Localización</th>
+            <th>No. Caja</th>
+            <th>Años</th>
+            <th>Total Cajas</th>
+            <th>Observaciones / Foto</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<footer>Servicios Educativos de Quintana Roo &nbsp;✦&nbsp; Sistema de Control de Archivos &nbsp;✦&nbsp; Uso Interno Oficial</footer>
+
+<!-- MODAL ELIMINAR -->
+<div class="modal-bg" id="modal-del">
+  <div class="modal">
+    <h3>⚠️ Eliminar Registro</h3>
+    <p>¿Confirmas que deseas eliminar este expediente permanentemente?</p>
+    <div class="modal-btns">
+      <button class="btn btn-red btn-sm" onclick="confirmarDel()">Sí, eliminar</button>
+      <button class="btn btn-outline btn-sm" onclick="cerrarModalDel()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" onclick="this.classList.remove('open')">
+  <img id="lb-img" src="" alt="Fotografía de expediente">
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+<a id="csv-dl" style="display:none"></a>
+
+<script>
+/* ══════════════════════════════════════
+   ESTADO
+══════════════════════════════════════ */
+let DB   = JSON.parse(localStorage.getItem('seqroo_v3') || '[]');
+let editIdx = -1;
+let delIdx  = -1;
+let fotoObs = null;
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+(function init(){
+  // Fecha header
+  document.getElementById('hdr-fecha').textContent =
+    new Date().toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  // Poblar selects Estante/Pasillo
+  const estante = document.getElementById('f-estante');
+  const pasillo = document.getElementById('f-pasillo');
+  for(let i=1;i<=100;i++){
+    estante.innerHTML += ⁠ <option value="Estante ${i}">Estante ${i}</option> ⁠;
+    pasillo.innerHTML += ⁠ <option value="Pasillo ${i}">Pasillo ${i}</option> ⁠;
+  }
+
+  // Logo guardado
+  const lg = localStorage.getItem('seqroo_logo_v3');
+  if(lg){ aplicarLogo(lg); }
+
+  // Consecutivo inicial
+  document.getElementById('f-consec').value = nextConsec();
+
+  renderTabla();
+  stats();
+})();
+
+/* ══════════════════════════════════════
+   LOGO
+══════════════════════════════════════ */
+document.getElementById('logo-file').addEventListener('change', e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    localStorage.setItem('seqroo_logo_v3', ev.target.result);
+    aplicarLogo(ev.target.result);
+    toast('✅ Logo cargado correctamente');
+  };
+  r.readAsDataURL(f);
+});
+
+function aplicarLogo(src){
+  const img = document.getElementById('logo-img');
+  const ph  = document.getElementById('logo-ph');
+  img.src = src; img.style.display='block'; ph.style.display='none';
+}
+
+function zoomLogo(v){
+  const ring = document.querySelector('.logo-ring');
+  ring.style.width  = v + 'px';
+  ring.style.height = v + 'px';
+}
+
+/* ══════════════════════════════════════
+   FOTO OBS
+══════════════════════════════════════ */
+document.getElementById('obs-foto-input').addEventListener('change', e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    fotoObs = ev.target.result;
+    document.getElementById('obs-img').src = fotoObs;
+    document.getElementById('obs-preview').style.display = 'flex';
+  };
+  r.readAsDataURL(f);
+});
+function quitarFotoObs(){
+  fotoObs = null;
+  document.getElementById('obs-foto-input').value = '';
+  document.getElementById('obs-preview').style.display = 'none';
+}
+
+/* ══════════════════════════════════════
+   TOTAL
+══════════════════════════════════════ */
+function calcTotal(){
+  const de = parseInt(document.getElementById('f-caja-de').value) || 0;
+  document.getElementById('f-total').value = de > 0 ? de : '';
+}
+
+/* ══════════════════════════════════════
+   CONSECUTIVO
+══════════════════════════════════════ */
+function nextConsec(){
+  if(!DB.length) return '001';
+  const nums = DB.map(r=>parseInt(r.consec)||0);
+  return String(Math.max(...nums)+1).padStart(3,'0');
+}
+
+/* ══════════════════════════════════════
+   GUARDAR
+══════════════════════════════════════ */
+function guardar(){
+  const get = id => document.getElementById(id).value.trim();
+  const consec  = get('f-consec');
+  const area    = get('f-area');
+  const serv    = get('f-servicios');
+  const unidad  = get('f-unidad');
+  const clave   = get('f-clave');
+  const nombre  = get('f-nombre');
+  const cajaNum = get('f-caja-num');
+  const anoDe   = get('f-ano-de');
+  const anoA    = get('f-ano-a');
+
+  if(!consec||!area||!serv||!unidad||!clave||!nombre||!cajaNum||!anoDe||!anoA){
+    toast('⚠️ Completa los campos obligatorios *','#9a0000'); return;
+  }
+
+  const estante = document.getElementById('f-estante').value;
+  const pasillo = document.getElementById('f-pasillo').value;
+  const locStr  = [estante,pasillo].filter(Boolean).join(' / ') || '—';
+
+  const reg = {
+    consec,area,serv,unidad,clave,nombre,
+    loc: locStr,
+    estante, pasillo,
+    cajaNum: parseInt(cajaNum)||1,
+    cajaDe : parseInt(document.getElementById('f-caja-de').value)||1,
+    anoDe, anoA,
+    total  : parseInt(document.getElementById('f-total').value)||parseInt(document.getElementById('f-caja-de').value)||1,
+    obs    : get('f-obs'),
+    foto   : fotoObs,
+    fecha  : new Date().toLocaleDateString('es-MX')
+  };
+
+  if(editIdx >= 0){
+    DB[editIdx] = reg;
+    editIdx = -1;
+    document.getElementById('form-title').textContent = 'CAPTURA DE EXPEDIENTE';
+    document.getElementById('form-pill').textContent  = 'NUEVO REGISTRO';
+    document.getElementById('btn-cancelar').style.display = 'none';
+    toast('✅ Registro actualizado');
+  } else {
+    DB.push(reg);
+    toast('✅ Expediente guardado correctamente');
+  }
+  save(); limpiarForm(false); renderTabla(); stats();
+}
+
+/* ══════════════════════════════════════
+   LIMPIAR / CANCELAR
+══════════════════════════════════════ */
+function limpiarForm(mantenerEdit){
+  ['f-consec','f-area','f-unidad','f-clave','f-nombre',
+   'f-caja-num','f-caja-de','f-ano-de','f-ano-a','f-total','f-obs'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
+  document.getElementById('f-servicios').value='';
+  document.getElementById('f-estante').value='';
+  document.getElementById('f-pasillo').value='';
+  quitarFotoObs();
+  if(!mantenerEdit){
+    document.getElementById('f-consec').value = editIdx>=0 ? '' : nextConsec();
+  }
+}
+function cancelarEdicion(){
+  editIdx=-1;
+  document.getElementById('form-title').textContent='CAPTURA DE EXPEDIENTE';
+  document.getElementById('form-pill').textContent='NUEVO REGISTRO';
+  document.getElementById('btn-cancelar').style.display='none';
+  limpiarForm(false);
+  toast('Edición cancelada','#9a7a28');
+}
+
+/* ══════════════════════════════════════
+   EDITAR
+══════════════════════════════════════ */
+function editar(i){
+  const r = DB[i];
+  document.getElementById('f-consec').value   = r.consec;
+  document.getElementById('f-area').value     = r.area;
+  document.getElementById('f-servicios').value= r.serv;
+  document.getElementById('f-unidad').value   = r.unidad;
+  document.getElementById('f-clave').value    = r.clave;
+  document.getElementById('f-nombre').value   = r.nombre;
+  document.getElementById('f-estante').value  = r.estante||'';
+  document.getElementById('f-pasillo').value  = r.pasillo||'';
+  document.getElementById('f-caja-num').value = r.cajaNum;
+  document.getElementById('f-caja-de').value  = r.cajaDe;
+  document.getElementById('f-ano-de').value   = r.anoDe;
+  document.getElementById('f-ano-a').value    = r.anoA;
+  document.getElementById('f-total').value    = r.total;
+  document.getElementById('f-obs').value      = r.obs||'';
+  if(r.foto){ fotoObs=r.foto; document.getElementById('obs-img').src=r.foto; document.getElementById('obs-preview').style.display='flex'; }
+  else { quitarFotoObs(); }
+  editIdx=i;
+  document.getElementById('form-title').textContent = '✏️  EDITANDO: '+r.consec;
+  document.getElementById('form-pill').textContent  = 'EDITANDO';
+  document.getElementById('btn-cancelar').style.display='inline-flex';
+  window.scrollTo({top:0,behavior:'smooth'});
+  toast('✏️ Editando expediente #'+r.consec,'#9a7a28');
+}
+
+/* ══════════════════════════════════════
+   ELIMINAR
+══════════════════════════════════════ */
+function pedirDel(i){ delIdx=i; document.getElementById('modal-del').classList.add('open'); }
+function cerrarModalDel(){ document.getElementById('modal-del').classList.remove('open'); delIdx=-1; }
+function confirmarDel(){
+  DB.splice(delIdx,1); save(); cerrarModalDel(); renderTabla(); stats();
+  toast('🗑️ Expediente eliminado','#8c1a3f');
+}
+
+/* ══════════════════════════════════════
+   RENDER TABLA
+══════════════════════════════════════ */
+function renderTabla(lista){
+  const datos = lista !== undefined ? lista : DB;
+  const tbody = document.getElementById('tbody');
+  document.getElementById('tbl-count').textContent = datos.length + ' registro' + (datos.length!==1?'s':'');
+
+  if(!datos.length){
+    tbody.innerHTML=⁠ <tr><td colspan="12" class="no-data"><span>📂</span>No hay expedientes registrados.<br>Utiliza el formulario para iniciar la captura.</td></tr> ⁠;
+    return;
+  }
+
+  tbody.innerHTML = datos.map((r,i)=>{
+    const ri = lista ? DB.indexOf(r) : i;
+    const fotoCell = r.foto
+      ? ⁠ <img class="td-img" src="${r.foto}" alt="foto" onclick="lightbox('${r.foto.replace(/'/g,"\\'")}')"><br> ⁠
+      : '';
+    return `
+    <tr>
+      <td><span class="bdg bdg-consec">${esc(r.consec)}</span></td>
+      <td><strong>${esc(r.area)}</strong></td>
+      <td><span class="bdg bdg-serv">${esc(r.serv)}</span></td>
+      <td style="font-size:.78rem">${esc(r.unidad)}</td>
+      <td style="font-family:'Cinzel',serif;font-size:.7rem;color:var(--g2)">${esc(r.clave)}</td>
+      <td><div class="td-desc" title="${esc(r.nombre)}">${esc(r.nombre)}</div></td>
+      <td><span class="bdg bdg-loc">${esc(r.loc)}</span></td>
+      <td style="text-align:center;font-family:'Cinzel',serif;font-size:.78rem">${r.cajaNum} de ${r.cajaDe}</td>
+      <td style="text-align:center;white-space:nowrap">${esc(r.anoDe)} – ${esc(r.anoA)}</td>
+      <td style="text-align:center"><span class="bdg bdg-total">${r.total}</span></td>
+      <td>${fotoCell}<div class="td-obs" title="${esc(r.obs)}">${esc(r.obs)||'—'}</div></td>
+      <td>
+        <div class="td-actions">
+          <button class="btn btn-gold btn-sm" onclick="editar(${ri})">✏️</button>
+          <button class="btn btn-red btn-sm" onclick="pedirDel(${ri})">🗑️</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════
+   FILTRAR
+══════════════════════════════════════ */
+function filtrar(){
+  const q = document.getElementById('buscador').value.toLowerCase();
+  if(!q){ renderTabla(); return; }
+  const f = DB.filter(r=>(r.consec+r.area+r.serv+r.unidad+r.clave+r.nombre+r.loc+r.anoDe+r.anoA+r.obs).toLowerCase().includes(q));
+  renderTabla(f);
+}
+
+/* ══════════════════════════════════════
+   STATS
+══════════════════════════════════════ */
+function stats(){
+  document.getElementById('st-exp').textContent  = DB.length;
+  document.getElementById('st-cajas').textContent= DB.reduce((s,r)=>s+r.total,0);
+  document.getElementById('st-areas').textContent= new Set(DB.map(r=>r.area)).size;
+  document.getElementById('st-units').textContent= new Set(DB.map(r=>r.unidad)).size;
+  document.getElementById('st-fotos').textContent= DB.filter(r=>r.foto).length;
+}
+
+/* ══════════════════════════════════════
+   LIGHTBOX
+══════════════════════════════════════ */
+function lightbox(src){
+  document.getElementById('lb-img').src=src;
+  document.getElementById('lightbox').classList.add('open');
+}
+
+/* ══════════════════════════════════════
+   EXPORT CSV
+══════════════════════════════════════ */
+function exportarCSV(){
+  if(!DB.length){ toast('⚠️ No hay registros para exportar','#9a0000'); return; }
+  const h = ['No. Consecutivo','Área','Servicios','Unidad Administrativa','Clave Expediente',
+             'Nombre/Descripción','Localización','No. Caja','De (Cajas)','Año Inicial','Año Final',
+             'Total Cajas','Observaciones','Fecha'];
+  const rows = DB.map(r=>[r.consec,r.area,r.serv,r.unidad,r.clave,r.nombre,r.loc,
+    r.cajaNum,r.cajaDe,r.anoDe,r.anoA,r.total,r.obs,r.fecha]
+    .map(v=>⁠ "${String(v||'').replace(/"/g,'""')}" ⁠).join(','));
+  const csv = '\uFEFF'+[h.join(','),...rows].join('\n');
+  const a = document.getElementById('csv-dl');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download = ⁠ SEQROO_Archivos_${new Date().toISOString().slice(0,10)}.csv ⁠;
+  a.click();
+  toast('📥 CSV exportado correctamente');
+}
+
+/* ══════════════════════════════════════
+   UTILIDADES
+══════════════════════════════════════ */
+function save(){ localStorage.setItem('seqroo_v3',JSON.stringify(DB)); }
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function toast(msg, bg='linear-gradient(135deg,var(--g2),var(--g1))'){
+  const t = document.getElementById('toast');
+  t.style.background = bg; t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3400);
+}
+</script>
+</body>
+</html>

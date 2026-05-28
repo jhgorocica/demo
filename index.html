@@ -875,8 +875,8 @@ let fotoObs = null;
   const estante = document.getElementById('f-estante');
   const pasillo = document.getElementById('f-pasillo');
   for(let i=1;i<=100;i++){
-    estante.innerHTML += ⁠ <option value="Estante ${i}">Estante ${i}</option> ⁠;
-    pasillo.innerHTML += ⁠ <option value="Pasillo ${i}">Pasillo ${i}</option> ⁠;
+    estante.innerHTML += `<option value="Estante ${i}">Estante ${i}</option>`;
+    pasillo.innerHTML += `<option value="Pasillo ${i}">Pasillo ${i}</option>`;
   }
 
   // Logo guardado
@@ -1075,14 +1075,14 @@ function renderTabla(lista){
   document.getElementById('tbl-count').textContent = datos.length + ' registro' + (datos.length!==1?'s':'');
 
   if(!datos.length){
-    tbody.innerHTML=⁠ <tr><td colspan="12" class="no-data"><span>📂</span>No hay expedientes registrados.<br>Utiliza el formulario para iniciar la captura.</td></tr> ⁠;
+    tbody.innerHTML=`<tr><td colspan="12" class="no-data"><span>📂</span>No hay expedientes registrados.<br>Utiliza el formulario para iniciar la captura.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = datos.map((r,i)=>{
     const ri = lista ? DB.indexOf(r) : i;
     const fotoCell = r.foto
-      ? ⁠ <img class="td-img" src="${r.foto}" alt="foto" onclick="lightbox('${r.foto.replace(/'/g,"\\'")}')"><br> ⁠
+      ? `<img class="td-img" src="${r.foto}" alt="foto" onclick="lightbox('${r.foto.replace(/'/g,"\\'")}')"><br>`
       : '';
     return `
     <tr>
@@ -1146,11 +1146,11 @@ function exportarCSV(){
              'Total Cajas','Observaciones','Fecha'];
   const rows = DB.map(r=>[r.consec,r.area,r.serv,r.unidad,r.clave,r.nombre,r.loc,
     r.cajaNum,r.cajaDe,r.anoDe,r.anoA,r.total,r.obs,r.fecha]
-    .map(v=>⁠ "${String(v||'').replace(/"/g,'""')}" ⁠).join(','));
+    .map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(','));
   const csv = '\uFEFF'+[h.join(','),...rows].join('\n');
   const a = document.getElementById('csv-dl');
   a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
-  a.download = ⁠ SEQROO_Archivos_${new Date().toISOString().slice(0,10)}.csv ⁠;
+  a.download = `SEQROO_Archivos_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
   toast('📥 CSV exportado correctamente');
 }
